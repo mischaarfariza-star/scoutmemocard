@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scout Memory Match - Permainan Pramuka Ceria</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2pdf for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- html-docx-js for Word export -->
+    <script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        scoutBrown: {
+                            DEFAULT: '#8B5A2B',
+                            light: '#A06B3B',
+                            dark: '#5C3A21',
+                            bg: '#FDF8F2'
+                        },
+                        scoutGreen: {
+                            DEFAULT: '#2E6F40',
+                            light: '#4A8C5D',
+                            dark: '#1D4628',
+                            pastel: '#E6F0E9'
+                        },
+                        scoutCream: '#FFFDF9'
+                    },
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        nunito: ['Nunito', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #FDF8F2;
+            background-image: radial-gradient(#2E6F40 0.75px, transparent 0.75px), radial-gradient(#8B5A2B 0.75px, #FDF8F2 0.75px);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+        }
+        h1, h2, h3, .font-title {
+            font-family: 'Fredoka', sans-serif;
+        }
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FDF8F2;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #8B5A2B;
+            border-radius: 4px;
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); opacity: 1; }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+        .animate-bounce-in {
+            animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-scoutBrown-dark flex flex-col justify-between selection:bg-scoutGreen selection:text-white">
+
+    <header class="bg-scoutBrown-dark text-white shadow-lg sticky top-0 z-50 border-b-4 border-scoutGreen">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-scoutGreen p-2 rounded-2xl shadow-md text-2xl flex items-center justify-center w-12 h-12 border-2 border-yellow-400">
+                    <i class="fa-solid fa-tent text-yellow-300"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold tracking-wide text-yellow-200 drop-shadow">Scout Memory Match</h1>
+                    <p class="text-xs text-scoutCream/80 font-nunito">Game Mencocokkan Kartu Pramuka Ceria</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3 mt-2 sm:mt-0">
+                <div class="hidden md:flex flex-col text-right">
+                    <span class="text-xs text-yellow-300 font-semibold">Dibuat oleh:</span>
+                    <span class="text-sm font-bold text-white bg-scoutGreen/90 px-3 py-0.5 rounded-full border border-yellow-400">Ashiva Juan</span>
+                </div>
+                <button onclick="toggleSound()" id="soundBtn" class="bg-scoutGreen hover:bg-scoutGreen-light text-white px-3 py-2 rounded-xl text-sm font-bold shadow-md transition transform active:scale-95 flex items-center space-x-1.5 border border-yellow-300/40" title="Matikan/Nyalakan Suara">
+                    <i class="fa-solid fa-volume-high text-yellow-300" id="soundIcon"></i>
+                    <span class="hidden sm:inline">Audio</span>
+                </button>
+                <button onclick="openRulesModal()" class="bg-amber-600 hover:bg-amber-500 text-white px-3 py-2 rounded-xl text-sm font-bold shadow-md transition transform active:scale-95 flex items-center space-x-1.5 border border-yellow-300/40">
+                    <i class="fa-solid fa-circle-question text-yellow-200"></i>
+                    <span class="hidden sm:inline">Aturan</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl w-full mx-auto px-4 py-6 flex-grow flex flex-col items-center justify-center">
+
+        <!-- Mobile Author Badge -->
+        <div class="md:hidden mb-4 bg-scoutGreen/10 border-2 border-scoutGreen text-scoutGreen-dark px-4 py-1.5 rounded-full text-xs font-bold flex items-center space-x-2">
+            <i class="fa-solid fa-award text-amber-600"></i>
+            <span>Dibuat Oleh: <strong class="text-scoutBrown-dark">Ashiva Juan</strong></span>
+        </div>
+
+        <!-- MENU SCREEN -->
+        <div id="menuScreen" class="w-full max-w-xl bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-6 sm:p-8 border-4 border-scoutBrown/30 text-center relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 text-scoutGreen/10 text-9xl pointer-events-none">
+                <i class="fa-solid fa-campground"></i>
+            </div>
+            <div class="absolute -bottom-10 -left-10 text-scoutBrown/10 text-9xl pointer-events-none">
+                <i class="fa-solid fa-compass"></i>
+            </div>
+
+            <div class="mb-5 inline-block bg-scoutGreen-pastel p-4 rounded-3xl border-2 border-scoutGreen shadow-inner">
+                <img src="https://placehold.co/120x120/2E6F40/FFFDF9?text=PRAMUKA" alt="Logo Pramuka Ceria" class="w-24 h-24 mx-auto rounded-2xl object-cover shadow-md border-2 border-yellow-400">
+            </div>
+
+            <h2 class="text-3xl sm:text-4xl font-bold text-scoutBrown-dark mb-2">Asah Ingatan Kepramukaan!</h2>
+            <p class="text-scoutBrown text-sm sm:text-base mb-6 font-nunito">
+                Buka kartu dan temukan pasangan bergambar simbol Pramuka, simpul, kompas, tenda, dan alat kemah lainnya!
+            </p>
+
+            <!-- Difficulty Selector -->
+            <div class="mb-6 text-left">
+                <label class="block text-sm font-bold text-scoutBrown-dark mb-2 flex items-center space-x-1.5">
+                    <i class="fa-solid fa-layer-group text-scoutGreen"></i>
+                    <span>Pilih Tingkat Kesulitan:</span>
+                </label>
+                <div class="grid grid-cols-3 gap-3">
+                    <button onclick="setDifficulty('easy')" id="diffEasy" class="diff-btn py-3 px-2 rounded-2xl font-bold text-sm sm:text-base border-2 border-scoutGreen bg-scoutGreen text-white shadow-md transition transform active:scale-95 flex flex-col items-center">
+                        <i class="fa-solid fa-face-smile mb-1 text-lg"></i>
+                        <span>Mudah</span>
+                        <span class="text-[10px] opacity-90 font-normal">6 Pasang</span>
+                    </button>
+                    <button onclick="setDifficulty('medium')" id="diffMedium" class="diff-btn py-3 px-2 rounded-2xl font-bold text-sm sm:text-base border-2 border-scoutBrown/30 bg-scoutBrown/10 text-scoutBrown-dark hover:bg-scoutBrown/20 transition transform active:scale-95 flex flex-col items-center">
+                        <i class="fa-solid fa-face-grimace mb-1 text-lg"></i>
+                        <span>Sedang</span>
+                        <span class="text-[10px] opacity-90 font-normal">8 Pasang</span>
+                    </button>
+                    <button onclick="setDifficulty('hard')" id="diffHard" class="diff-btn py-3 px-2 rounded-2xl font-bold text-sm sm:text-base border-2 border-scoutBrown/30 bg-scoutBrown/10 text-scoutBrown-dark hover:bg-scoutBrown/20 transition transform active:scale-95 flex flex-col items-center">
+                        <i class="fa-solid fa-face-dizzy mb-1 text-lg"></i>
+                        <span>Sulit</span>
+                        <span class="text-[10px] opacity-90 font-normal">12 Pasang</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Best Scores Board -->
+            <div class="bg-scoutGreen-pastel rounded-2xl p-4 mb-6 border-2 border-scoutGreen/30 flex justify-around items-center text-center">
+                <div>
+                    <span class="text-xs text-scoutGreen-dark block font-semibold">Rekor Mudah</span>
+                    <span id="bestEasy" class="text-lg font-bold text-scoutBrown-dark">-</span>
+                </div>
+                <div class="w-px h-8 bg-scoutGreen/30"></div>
+                <div>
+                    <span class="text-xs text-scoutGreen-dark block font-semibold">Rekor Sedang</span>
+                    <span id="bestMedium" class="text-lg font-bold text-scoutBrown-dark">-</span>
+                </div>
+                <div class="w-px h-8 bg-scoutGreen/30"></div>
+                <div>
+                    <span class="text-xs text-scoutGreen-dark block font-semibold">Rekor Sulit</span>
+                    <span id="bestHard" class="text-lg font-bold text-scoutBrown-dark">-</span>
+                </div>
+            </div>
+
+            <!-- Start Game Button -->
+            <button onclick="startGame()" class="w-full py-4 bg-gradient-to-r from-scoutGreen to-scoutGreen-dark hover:from-scoutGreen-light hover:to-scoutGreen text-white font-bold text-xl rounded-2xl shadow-xl border-2 border-yellow-300 transform active:scale-98 transition flex items-center justify-center space-x-3">
+                <i class="fa-solid fa-play text-yellow-300 text-2xl"></i>
+                <span>Mulai Permainan!</span>
+            </button>
+        </div>
+
+        <div id="gameScreen" class="hidden w-full max-w-4xl bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-4 sm:p-6 border-4 border-scoutBrown/30">
+            
+            <!-- Game HUD Header -->
+            <div class="flex flex-wrap justify-between items-center bg-scoutGreen-pastel p-3 sm:p-4 rounded-2xl mb-6 border-2 border-scoutGreen/30 gap-3">
+                <div class="flex items-center space-x-3">
+                    <button onclick="backToMenu()" class="bg-scoutBrown text-white px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold shadow hover:bg-scoutBrown-dark transition flex items-center space-x-1">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Menu</span>
+                    </button>
+                    <div>
+                        <span class="text-xs text-scoutGreen-dark block font-bold">Tingkat:</span>
+                        <span id="currentLevelBadge" class="text-xs font-extrabold uppercase bg-scoutGreen text-white px-2 py-0.5 rounded-md">Mudah</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-3 sm:space-x-6">
+                    <div class="text-center bg-white px-3 py-1 rounded-xl shadow-sm border border-scoutGreen/20">
+                        <span class="text-[10px] text-scoutBrown block font-bold uppercase">Langkah</span>
+                        <span id="stepCount" class="text-lg font-extrabold text-scoutGreen-dark">0</span>
+                    </div>
+                    <div class="text-center bg-white px-3 py-1 rounded-xl shadow-sm border border-scoutGreen/20">
+                        <span class="text-[10px] text-scoutBrown block font-bold uppercase">Waktu</span>
+                        <span id="timerDisplay" class="text-lg font-extrabold text-amber-700">00:00</span>
+                    </div>
+                    <div class="text-center bg-white px-3 py-1 rounded-xl shadow-sm border border-scoutGreen/20">
+                        <span class="text-[10px] text-scoutBrown block font-bold uppercase">Pasangan</span>
+                        <span id="matchCount" class="text-lg font-extrabold text-scoutBrown-dark">0/6</span>
+                    </div>
+                </div>
+
+                <button onclick="restartGame()" class="bg-amber-600 hover:bg-amber-700 text-white p-2 sm:px-3 rounded-xl text-xs sm:text-sm font-bold shadow transition transform active:scale-95 flex items-center space-x-1" title="Ulangi Permainan">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span class="hidden sm:inline">Ulangi</span>
+                </button>
+            </div>
+
+            <!-- Card Grid Layout -->
+            <div id="cardsGrid" class="grid gap-3 sm:gap-4 justify-center mx-auto mb-4">
+                <!-- Dynamically generated cards -->
+            </div>
+        </div>
+
+        <!-- Result Modal -->
+        <div id="resultModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div id="resultCardContent" class="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6 sm:p-8 border-4 border-scoutGreen text-center relative transform transition-all animate-bounce-in">
+                
+                <div class="w-20 h-20 mx-auto bg-scoutGreen rounded-full flex items-center justify-center text-4xl text-yellow-300 shadow-lg mb-4 border-4 border-yellow-300">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+
+                <h3 class="text-3xl font-bold text-scoutBrown-dark mb-1">Hebat, Kakak!</h3>
+                <p class="text-scoutBrown text-sm mb-6 font-nunito">Kamu berhasil menyelesaikan semua tantangan memori Pramuka dengan baik.</p>
+
+                <div class="bg-scoutGreen-pastel rounded-2xl p-4 mb-6 border border-scoutGreen/30 space-y-2 text-left">
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="font-semibold text-scoutBrown">Tingkat Kesulitan:</span>
+                        <span id="resDiff" class="font-bold text-scoutGreen-dark uppercase">Mudah</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="font-semibold text-scoutBrown">Jumlah Langkah:</span>
+                        <span id="resSteps" class="font-bold text-scoutBrown-dark">0 langkah</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="font-semibold text-scoutBrown">Waktu Penyelesaian:</span>
+                        <span id="resTime" class="font-bold text-amber-700">00:00</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm border-t border-scoutGreen/20 pt-2">
+                        <span class="font-semibold text-scoutBrown">Pembuat Game:</span>
+                        <span class="font-bold text-scoutGreen-dark">Ashiva Juan</span>
+                    </div>
+                </div>
+
+                <!-- Action & Export Buttons -->
+                <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="exportToPDF()" class="py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow transition flex items-center justify-center space-x-2 text-sm">
+                            <i class="fa-solid fa-file-pdf"></i>
+                            <span>Simpan PDF</span>
+                        </button>
+                        <button onclick="exportToWord()" class="py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow transition flex items-center justify-center space-x-2 text-sm">
+                            <i class="fa-solid fa-file-word"></i>
+                            <span>Simpan Word</span>
+                        </button>
+                    </div>
+                    <button onclick="backToMenu()" class="w-full py-3 bg-scoutBrown hover:bg-scoutBrown-dark text-white font-bold rounded-xl shadow transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-house"></i>
+                        <span>Kembali ke Menu Utama</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rules Modal -->
+        <div id="rulesModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-6 sm:p-8 border-4 border-scoutBrown text-left relative max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4 border-b pb-3">
+                    <h3 class="text-2xl font-bold text-scoutBrown-dark flex items-center space-x-2">
+                        <i class="fa-solid fa-book-open text-scoutGreen"></i>
+                        <span>Aturan Permainan Pramuka</span>
+                    </h3>
+                    <button onclick="closeRulesModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold p-1">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div class="space-y-3 text-scoutBrown text-sm sm:text-base font-nunito">
+                    <div class="flex items-start space-x-3 bg-scoutGreen-pastel p-3 rounded-xl border border-scoutGreen/30">
+                        <div class="bg-scoutGreen text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">1</div>
+                        <p><strong>Membuka Kartu:</strong> Buka 2 kartu secara bersamaan untuk mencari pasangan ikon kepramukaan yang identik.</p>
+                    </div>
+                    <div class="flex items-start space-x-3 bg-scoutGreen-pastel p-3 rounded-xl border border-scoutGreen/30">
+                        <div class="bg-scoutGreen text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">2</div>
+                        <p><strong>Jumlah Langkah:</strong> Setiap kali kamu membuka sepasang kartu, langkah akan bertambah 1. Selesaikan dengan langkah sesedikit mungkin!</p>
+                    </div>
+                    <div class="flex items-start space-x-3 bg-scoutGreen-pastel p-3 rounded-xl border border-scoutGreen/30">
+                        <div class="bg-scoutGreen text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">3</div>
+                        <p><strong>Pewaktu (Timer):</strong> Waktu berjalan terus selama permainan. Dapatkan rekor tercepat di setiap tingkat kesulitan.</p>
+                    </div>
+                    <div class="flex items-start space-x-3 bg-scoutGreen-pastel p-3 rounded-xl border border-scoutGreen/30">
+                        <div class="bg-scoutGreen text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">4</div>
+                        <p><strong>Pencipta Game:</strong> Game edukasi interaktif ini dikembangkan oleh <strong>Ashiva Juan</strong>.</p>
+                    </div>
+                </div>
+                <div class="mt-6 text-center">
+                    <button onclick="closeRulesModal()" class="px-6 py-2.5 bg-scoutGreen hover:bg-scoutGreen-dark text-white font-bold rounded-xl shadow">
+                        Mengerti, Ayo Main!
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-scoutBrown-dark text-scoutCream/80 text-center py-4 border-t-2 border-scoutGreen text-xs sm:text-sm">
+        <div class="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <p>© Scout Memory Match • Dibuat oleh <strong class="text-yellow-300">Ashiva Juan</strong></p>
+            <div class="flex space-x-4">
+                <span class="flex items-center space-x-1"><i class="fa-solid fa-shield-heart text-red-400"></i><span>Pramuka Indonesia</span></span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Scout Items Dataset
+        const scoutCardsData = [
+            { id: 1, name: 'Tunas Kelapa', icon: 'fa-seedling', color: 'text-amber-600' },
+            { id: 2, name: 'Tenda Kemah', icon: 'fa-campground', color: 'text-scoutGreen' },
+            { id: 3, name: 'Kompas Bidik', icon: 'fa-compass', color: 'text-blue-600' },
+            { id: 4, name: 'Simpul Pramuka', icon: 'fa-knot', color: 'text-amber-800' },
+            { id: 5, name: 'Ransel Lapangan', icon: 'fa-backpack', color: 'text-stone-700' },
+            { id: 6, name: 'Api Unggun', icon: 'fa-fire-flame-curved', color: 'text-orange-500' },
+            { id: 7, name: 'Kacu Leher', icon: 'fa-necktie', color: 'text-red-600' },
+            { id: 8, name: 'Peluit Regu', icon: 'fa-bullhorn', color: 'text-yellow-600' },
+            { id: 9, name: 'Peta Penjelajah', icon: 'fa-map', color: 'text-emerald-700' },
+            { id: 10, name: 'Kotak P3K', icon: 'fa-suitcase-medical', color: 'text-rose-600' },
+            { id: 11, name: 'Senter Malam', icon: 'fa-flashlight', color: 'text-amber-500' },
+            { id: 12, name: 'Bintang Jasa', icon: 'fa-star', color: 'text-yellow-500' }
+        ];
+
+        let currentDifficulty = 'easy';
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let totalPairsNeeded = 6;
+        let stepCount = 0;
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let isGameActive = false;
+        let isSoundEnabled = true;
+        let lockBoard = false;
+
+        // High Score Tracking
+        let bestScores = {
+            easy: localStorage.getItem('scout_best_easy') ? parseInt(localStorage.getItem('scout_best_easy')) : null,
+            medium: localStorage.getItem('scout_best_medium') ? parseInt(localStorage.getItem('scout_best_medium')) : null,
+            hard: localStorage.getItem('scout_best_hard') ? parseInt(localStorage.getItem('scout_best_hard')) : null,
+        };
+
+        updateBestScoresUI();
+
+        function setDifficulty(diff) {
+            currentDifficulty = diff;
+            document.querySelectorAll('.diff-btn').forEach(btn => {
+                btn.className = "diff-btn py-3 px-2 rounded-2xl font-bold text-sm sm:text-base border-2 border-scoutBrown/30 bg-scoutBrown/10 text-scoutBrown-dark hover:bg-scoutBrown/20 transition transform active:scale-95 flex flex-col items-center";
+            });
+            const activeBtn = document.getElementById(
+                diff === 'easy' ? 'diffEasy' : diff === 'medium' ? 'diffMedium' : 'diffHard'
+            );
+            activeBtn.className = "diff-btn py-3 px-2 rounded-2xl font-bold text-sm sm:text-base border-2 border-scoutGreen bg-scoutGreen text-white shadow-md transition transform active:scale-95 flex flex-col items-center";
+        }
+
+        function updateBestScoresUI() {
+            document.getElementById('bestEasy').innerText = bestScores.easy !== null ? bestScores.easy + ' dtk' : '-';
+            document.getElementById('bestMedium').innerText = bestScores.medium !== null ? bestScores.medium + ' dtk' : '-';
+            document.getElementById('bestHard').innerText = bestScores.hard !== null ? bestScores.hard + ' dtk' : '-';
+        }
+
+        function startGame() {
+            document.getElementById('menuScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+
+            if (currentDifficulty === 'easy') {
+                totalPairsNeeded = 6;
+                document.getElementById('currentLevelBadge').innerText = 'Mudah (6 Pasang)';
+            } else if (currentDifficulty === 'medium') {
+                totalPairsNeeded = 8;
+                document.getElementById('currentLevelBadge').innerText = 'Sedang (8 Pasang)';
+            } else {
+                totalPairsNeeded = 12;
+                document.getElementById('currentLevelBadge').innerText = 'Sulit (12 Pasang)';
+            }
+
+            resetGameState();
+            buildBoard();
+            startTimer();
+        }
+
+        function backToMenu() {
+            clearInterval(timerInterval);
+            isGameActive = false;
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('resultModal').classList.add('hidden');
+            document.getElementById('menuScreen').classList.remove('hidden');
+            updateBestScoresUI();
+        }
+
+        function restartGame() {
+            clearInterval(timerInterval);
+            resetGameState();
+            buildBoard();
+            startTimer();
+        }
+
+        function resetGameState() {
+            flippedCards = [];
+            matchedPairs = 0;
+            stepCount = 0;
+            timerSeconds = 0;
+            lockBoard = false;
+            isGameActive = true;
+            document.getElementById('stepCount').innerText = '0';
+            document.getElementById('matchCount').innerText = `0/${totalPairsNeeded}`;
+            document.getElementById('timerDisplay').innerText = '00:00';
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (!isGameActive) return;
+                timerSeconds++;
+                let mins = Math.floor(timerSeconds / 60);
+                let secs = timerSeconds % 60;
+                document.getElementById('timerDisplay').innerText = 
+                    (mins < 10 ? '0' + mins : mins) + ':' + (secs < 10 ? '0' + secs : secs);
+            }, 1000);
+        }
+
+        function buildBoard() {
+            const grid = document.getElementById('cardsGrid');
+            grid.innerHTML = '';
+
+            if (currentDifficulty === 'easy') {
+                grid.className = "grid grid-cols-3 sm:grid-cols-4 gap-3 sm:gap-4 justify-center mx-auto mb-4";
+            } else if (currentDifficulty === 'medium') {
+                grid.className = "grid grid-cols-4 gap-3 sm:gap-4 justify-center mx-auto mb-4";
+            } else {
+                grid.className = "grid grid-cols-4 sm:grid-cols-6 gap-2 sm:gap-3 justify-center mx-auto mb-4";
+            }
+
+            let selectedData = [...scoutCardsData].sort(() => 0.5 - Math.random()).slice(0, totalPairsNeeded);
+            let deck = [...selectedData, ...selectedData].sort(() => 0.5 - Math.random());
+
+            cards = deck.map((item, index) => ({
+                uniqueId: index,
+                id: item.id,
+                name: item.name,
+                icon: item.icon,
+                color: item.color,
+                isFlipped: false,
+                isMatched: false
+            }));
+
+            cards.forEach((card, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = "perspective-1000 w-20 h-24 sm:w-24 sm:h-28 md:w-28 md:h-32 cursor-pointer";
+                cardEl.dataset.index = index;
+
+                cardEl.innerHTML = `
+                    <div class="relative w-full h-full duration-500 transform-style-3d rounded-2xl shadow-md ${card.isFlipped ? 'rotate-y-180' : ''}" id="card-inner-${index}">
+                        <!-- Card Front -->
+                        <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-scoutBrown to-scoutBrown-dark rounded-2xl border-2 border-yellow-400 flex flex-col items-center justify-center p-2 text-white backface-hidden shadow-inner hover:scale-102 transition">
+                            <i class="fa-solid fa-tent text-2xl sm:text-3xl text-yellow-300 mb-1"></i>
+                            <span class="text-[10px] sm:text-xs font-bold uppercase text-yellow-200 font-title">Pramuka</span>
+                        </div>
+                        <!-- Card Back -->
+                        <div class="absolute inset-0 w-full h-full bg-scoutGreen-pastel rounded-2xl border-2 border-scoutGreen flex flex-col items-center justify-center p-1 sm:p-2 rotate-y-180 backface-hidden shadow-inner">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center shadow-md mb-1 border border-scoutGreen/30">
+                                <i class="fa-solid ${card.icon} ${card.color} text-xl sm:text-2xl"></i>
+                            </div>
+                            <span class="text-[10px] sm:text-xs font-bold text-scoutBrown-dark text-center leading-tight line-clamp-2">${card.name}</span>
+                        </div>
+                    </div>
+                `;
+
+                cardEl.addEventListener('click', () => flipCard(index));
+                grid.appendChild(cardEl);
+            });
+        }
+
+        function flipCard(index) {
+            if (lockBoard) return;
+            let card = cards[index];
+            if (card.isFlipped || card.isMatched) return;
+
+            card.isFlipped = true;
+            document.getElementById(`card-inner-${index}`).classList.add('rotate-y-180');
+            playSound('flip');
+
+            flippedCards.push({ index, id: card.id });
+
+            if (flippedCards.length === 2) {
+                stepCount++;
+                document.getElementById('stepCount').innerText = stepCount;
+                lockBoard = true;
+                checkForMatch();
+            }
+        }
+
+        function checkForMatch() {
+            let [card1, card2] = flippedCards;
+            let isMatch = card1.id === card2.id;
+
+            if (isMatch) {
+                cards[card1.index].isMatched = true;
+                cards[card2.index].isMatched = true;
+                matchedPairs++;
+                document.getElementById('matchCount').innerText = `${matchedPairs}/${totalPairsNeeded}`;
+                playSound('match');
+
+                flippedCards = [];
+                lockBoard = false;
+
+                if (matchedPairs === totalPairsNeeded) {
+                    endGame();
+                }
+            } else {
+                playSound('wrong');
+                setTimeout(() => {
+                    cards[card1.index].isFlipped = false;
+                    cards[card2.index].isFlipped = false;
+                    document.getElementById(`card-inner-${card1.index}`).classList.remove('rotate-y-180');
+                    document.getElementById(`card-inner-${card2.index}`).classList.remove('rotate-y-180');
+                    flippedCards = [];
+                    lockBoard = false;
+                }, 900);
+            }
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            isGameActive = false;
+            playSound('victory');
+
+            let currentBest = bestScores[currentDifficulty];
+            if (currentBest === null || timerSeconds < currentBest) {
+                bestScores[currentDifficulty] = timerSeconds;
+                localStorage.setItem(`scout_best_${currentDifficulty}`, timerSeconds);
+                updateBestScoresUI();
+            }
+
+            document.getElementById('resDiff').innerText = currentDifficulty === 'easy' ? 'Mudah' : currentDifficulty === 'medium' ? 'Sedang' : 'Sulit';
+            document.getElementById('resSteps').innerText = stepCount + ' langkah';
+            
+            let mins = Math.floor(timerSeconds / 60);
+            let secs = timerSeconds % 60;
+            document.getElementById('resTime').innerText = (mins < 10 ? '0' + mins : mins) + ':' + (secs < 10 ? '0' + secs : secs);
+
+            setTimeout(() => {
+                document.getElementById('resultModal').classList.remove('hidden');
+            }, 400);
+        }
+
+        function openRulesModal() { document.getElementById('rulesModal').classList.remove('hidden'); }
+        function closeRulesModal() { document.getElementById('rulesModal').classList.add('hidden'); }
+
+        let audioCtx = null;
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            return audioCtx;
+        }
+
+        function playSound(type) {
+            if (!isSoundEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                if (ctx.state === 'suspended') ctx.resume();
+
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                const now = ctx.currentTime;
+                if (type === 'flip') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'match') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.1);
+                    osc.frequency.setValueAtTime(783.99, now + 0.2);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.setValueAtTime(160, now + 0.15);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'victory') {
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        const o = ctx.createOscillator();
+                        const g = ctx.createGain();
+                        o.connect(g);
+                        g.connect(ctx.destination);
+                        o.frequency.setValueAtTime(freq, now + (idx * 0.12));
+                        g.gain.setValueAtTime(0.2, now + (idx * 0.12));
+                        g.gain.linearRampToValueAtTime(0.01, now + (idx * 0.12) + 0.3);
+                        o.start(now + (idx * 0.12));
+                        o.stop(now + (idx * 0.12) + 0.3);
+                    });
+                }
+            } catch (e) {
+                console.error("Audio playback error:", e);
+            }
+        }
+
+        function toggleSound() {
+            isSoundEnabled = !isSoundEnabled;
+            const icon = document.getElementById('soundIcon');
+            if (isSoundEnabled) {
+                icon.className = "fa-solid fa-volume-high text-yellow-300";
+            } else {
+                icon.className = "fa-solid fa-volume-xmark text-red-300";
+            }
+        }
+
+        function exportToPDF() {
+            const element = document.getElementById('resultCardContent');
+            const opt = {
+                margin:       10,
+                filename:     'Sertifikat_ScoutMemoryMatch_AshivaJuan.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().from(element).set(opt).save();
+        }
+
+        function exportToWord() {
+            const diffText = document.getElementById('resDiff').innerText;
+            const stepsText = document.getElementById('resSteps').innerText;
+            const timeText = document.getElementById('resTime').innerText;
+
+            const htmlContent = `
+                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                <head><title>Hasil Permainan Scout Memory Match</title>
+                <style>
+                    body { font-family: 'Arial', sans-serif; color: #333; line-height: 1.6; padding: 20px; }
+                    .header { text-align: center; border-bottom: 3px solid #2E6F40; padding-bottom: 15px; margin-bottom: 20px; }
+                    h1 { color: #8B5A2B; margin-bottom: 5px; }
+                    .badge { background: #E6F0E9; padding: 15px; border-radius: 8px; border: 1px solid #2E6F40; margin-bottom: 20px; }
+                    .footer { margin-top: 30px; font-size: 12px; color: #666; text-align: center; border-top: 1px solid #ddd; padding-top: 10px; }
+                </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>GERAKAN PRAMUKA INDONESIA</h1>
+                        <h2>Sertifikat / Hasil Permainan Scout Memory Match</h2>
+                    </div>
+                    <div class="badge">
+                        <p><strong>Pencipta Game:</strong> Ashiva Juan</p>
+                        <p><strong>Tingkat Kesulitan:</strong> ${diffText}</p>
+                        <p><strong>Total Langkah:</strong> ${stepsText}</p>
+                        <p><strong>Waktu Penyelesaian:</strong> ${timeText}</p>
+                        <p><strong>Status Misi:</strong> BERHASIL DENGAN GEMILANG</p>
+                    </div>
+                    <p>Selamat atas keberhasilan melatih ingatan dan wawasan kepramukaan melalui Scout Memory Match!</p>
+                    <div class="footer">
+                        <p>© Scout Memory Match • Dibuat oleh Ashiva Juan</p>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            const converted = htmlDocx.asBlob(htmlContent);
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(converted);
+            link.download = 'Sertifikat_ScoutMemoryMatch_AshivaJuan.docx';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
